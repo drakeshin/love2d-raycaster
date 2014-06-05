@@ -1,16 +1,20 @@
 require("math")
 require("os")
 
+
 function love.load()
     
     w = 800
     h = 600
     
+    texWidth = 64
+    texHeight = 64
+    
     mapWidth = 24
     mapHeight = 24
 
-    posX = 22
-    posY = 12
+    posX = 23
+    posY = 12.5
     
     dirX = -1
     dirY = 0
@@ -18,31 +22,51 @@ function love.load()
     planeX = 0
     planeY = 0.66
 
-    map = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-           {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
-           {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,0,0,0,0,5,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-           {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}}
+    texture = loadImages()
     
+    map = {{4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7},
+           {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
+           {4,0,1,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,7},
+           {4,0,2,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,7},
+           {4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
+           {4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7},
+           {4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1},
+           {4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
+           {4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1},
+           {4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
+           {4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1},
+           {4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1},
+           {6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
+           {8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+           {6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
+           {4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3},
+           {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
+           {4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2},
+           {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
+           {4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2},
+           {4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
+           {4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2},
+           {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
+           {4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3}}
+end
+
+
+function bool2int(value)
+    return value and 1 or 0
+end
+
+
+function loadImages()
+    local textures = {{},{},{},{},{},{},{},{}}
+    textures[1] = love.image.newImageData("pics/eagle.png")
+    textures[2] = love.image.newImageData("pics/redbrick.png")
+    textures[3] = love.image.newImageData("pics/purplestone.png")
+    textures[4] = love.image.newImageData("pics/greystone.png")
+    textures[5] = love.image.newImageData("pics/bluestone.png")
+    textures[6] = love.image.newImageData("pics/mossy.png")
+    textures[7] = love.image.newImageData("pics/wood.png")
+    textures[8] = love.image.newImageData("pics/colorstone.png")
+    return textures
 end
 
 
@@ -89,6 +113,7 @@ end
 
 
 function love.draw()
+    
     for x = 1, w do
         cameraX = 2 * x / w - 1
 
@@ -137,7 +162,7 @@ function love.draw()
                 hit = 1 
             end
         end
-        
+          
         if side == 0 then
             perpWallDist = math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX)
         else
@@ -148,8 +173,8 @@ function love.draw()
         
         drawStart = -lineHeight / 2 + h / 2
         
-        if drawStart < 0 then
-            drawStart = 0
+        if drawStart < 1 then
+            drawStart = 1
         end
         
         drawEnd = lineHeight / 2 + h / 2
@@ -158,25 +183,38 @@ function love.draw()
             drawEnd = h
         end
         
+        texNum = map[mapX][mapY]
+        
         if side == 1 then
-            sideMod = 0.5
+            wallX = rayPosX + ((mapY - rayPosY + (1 - stepY) / 2) / rayDirY) * rayDirX
         else
-            sideMod = 1
+            wallX = rayPosY + ((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) * rayDirY
+        end
+        wallX = wallX - math.floor(wallX)
+        
+        texX = math.floor(wallX * texWidth)
+
+        if (side == 0 and rayDirX > 0) or (side == 1 and rayDirY < 0) then
+            texX = texWidth - texX - 1
         end
         
-        if map[mapX][mapY] == 1 then
-            love.graphics.setColor(255 * sideMod, 0, 0)
-        elseif map[mapX][mapY] == 2 then
-            love.graphics.setColor(0, 255 * sideMod, 0)
-        elseif map[mapX][mapY] == 3 then
-            love.graphics.setColor(0, 0, 255 * sideMod)
-        elseif map[mapX][mapY] == 4 then
-            local c = 255 * sideMod
-            love.graphics.setColor(c, c, c)
-        else
-            love.graphics.setColor(255 * sideMod, 255 * sideMod, 0)
+        for y = drawStart, drawEnd do
+            d = y * 256 - h * 128 + lineHeight * 128
+            texY = math.floor(((d * texHeight) / lineHeight) / 256)
+            index = math.floor(texHeight * texY + texX)
+            imgData = texture[texNum]
+            
+            xIndex = index % texWidth
+            yIndex = math.floor(index / texHeight)
+            
+            if xIndex > texWidth then xIndex = texWidth end
+            if xIndex < 1 then xIndex = 1 end
+            if yIndex > texHeight then yIndex = texHeight end
+            if yIndex < 1 then yIndex = 1 end
+            
+            r, g, b, a = imgData:getPixel(xIndex - 1, yIndex - 1)
+            love.graphics.setColor(r, g, b, a)
+            love.graphics.point(x, y)
         end
-        
-        love.graphics.line(x, drawStart, x, drawEnd)
     end
 end
