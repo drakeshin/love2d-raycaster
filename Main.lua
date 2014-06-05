@@ -216,5 +216,62 @@ function love.draw()
             love.graphics.setColor(r, g, b, a)
             love.graphics.point(x, y)
         end
+        
+        if side == 0 and rayDirX > 0 then
+            floorXWall = mapX
+            floorYWall = mapY + wallX
+        elseif side == 0 and rayDirX < 0 then
+            floorXWall = mapX + 1.0
+            floorYWall = mapY + wallX
+        elseif side == 1 and rayDirY > 0 then
+            floorXWall = mapX + wallX
+            floorYWall = mapY
+        else
+            floorXWall = mapX + wallX
+            floorYWall = mapY + 1.0
+        end
+        
+        distWall = perpWallDist
+        distPlayer = 0.0
+        
+        if drawEnd < 0 then
+            drawEnd = h
+        end
+        
+        y = drawEnd + 1
+        while y < h do
+            currentDist = h / (2.0 * y - h)
+            
+            weight = (currentDist - distPlayer) / (distWall - distPlayer)
+            
+            currentFloorX = weight * floorXWall + (1.0 - weight) * posX
+            currentFloorY = weight * floorYWall + (1.0 - weight) * posY
+            
+            floorTexX = math.floor(currentFloorX * texWidth) % texWidth
+            floorTexY = math.floor(currentFloorY * texHeight) % texHeight
+            
+            index = math.floor(texWidth * floorTexY + floorTexX)
+            xIndex = index % texWidth
+            yIndex = math.floor(index / texHeight)
+            
+            if xIndex > texWidth then xIndex = texWidth end
+            if xIndex < 1 then xIndex = 1 end
+            if yIndex > texHeight then yIndex = texHeight end
+            if yIndex < 1 then yIndex = 1 end
+
+            -- draw floor
+            imgData = texture[4]
+            r, g, b, a = imgData:getPixel(xIndex - 1, yIndex - 1)
+            love.graphics.setColor(r, g, b, a)
+            love.graphics.point(x, y)            
+
+            -- draw ceiling
+            imgData = texture[8]
+            r, g, b, a = imgData:getPixel(xIndex - 1, yIndex - 1)
+            love.graphics.setColor(r, g, b, a)
+            love.graphics.point(x, h - y)            
+            
+            y = y + 1
+        end
     end
 end
