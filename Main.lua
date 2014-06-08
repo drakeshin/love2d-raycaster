@@ -1,5 +1,4 @@
 require("math")
-require("os")
 
 
 function love.load()
