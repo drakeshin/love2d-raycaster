@@ -20,7 +20,7 @@ function love.load()
     
     planeX = 0
     planeY = 0.66
-
+    
     texture = loadImages()
     
     map = {{4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7},
@@ -278,4 +278,9 @@ function love.draw()
             y = y + 1
         end
     end
+    
+    love.graphics.setColor(50, 50, 50)
+    love.graphics.rectangle("fill", 5, 5, 60, 25)
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.print("FPS: "..tostring(love.timer.getFPS()), 10, 10)
 end
