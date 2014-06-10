@@ -3,8 +3,11 @@ require("math")
 
 function love.load()
     
-    w = 800
-    h = 600
+    w = 1024
+    h = 768
+    
+    love.window.setMode(w, h)
+    love.graphics.setDefaultFilter("nearest", "nearest")
     
     texWidth = 64
     texHeight = 64
@@ -50,21 +53,16 @@ function love.load()
 end
 
 
-function bool2int(value)
-    return value and 1 or 0
-end
-
-
 function loadImages()
     local textures = {{},{},{},{},{},{},{},{}}
-    textures[1] = love.image.newImageData("pics/eagle.png")
-    textures[2] = love.image.newImageData("pics/redbrick.png")
-    textures[3] = love.image.newImageData("pics/purplestone.png")
-    textures[4] = love.image.newImageData("pics/greystone.png")
-    textures[5] = love.image.newImageData("pics/bluestone.png")
-    textures[6] = love.image.newImageData("pics/mossy.png")
-    textures[7] = love.image.newImageData("pics/wood.png")
-    textures[8] = love.image.newImageData("pics/colorstone.png")
+    textures[1] = love.graphics.newImage("pics/eagle.png")
+    textures[2] = love.graphics.newImage("pics/redbrick.png")
+    textures[3] = love.graphics.newImage("pics/purplestone.png")
+    textures[4] = love.graphics.newImage("pics/greystone.png")
+    textures[5] = love.graphics.newImage("pics/bluestone.png")
+    textures[6] = love.graphics.newImage("pics/mossy.png")
+    textures[7] = love.graphics.newImage("pics/wood.png")
+    textures[8] = love.graphics.newImage("pics/colorstone.png")
     return textures
 end
 
@@ -112,7 +110,7 @@ end
 
 
 function love.draw()
-    
+
     for x = 1, w do
         local cameraX = 2 * x / w - 1
 
@@ -128,8 +126,7 @@ function love.draw()
         local deltaDistX = math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX))
         local deltaDistY = math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY))
         
-        local hit = false
-        local stepX, sideDistX, stepY, sideDistY
+        local stepX, sideDistX, stepY, sideDistY, wallX, sideShadow
         
         if rayDirX < 0 then
             stepX = -1
@@ -147,138 +144,45 @@ function love.draw()
             sideDistY = (mapY + 1 - rayPosY) * deltaDistY
         end
         
-        while not hit do
+        while map[mapX][mapY] == 0 do
             if sideDistX < sideDistY then
                 sideDistX = sideDistX + deltaDistX
                 mapX = mapX + stepX
-                side = 0
+                side = false
             else
                 sideDistY = sideDistY + deltaDistY
                 mapY = mapY + stepY
-                side = 1
-            end
-            
-            if map[mapX][mapY] > 0 then 
-                hit = true
+                side = true
             end
         end
           
-        if side == 0 then
-            perpWallDist = math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX)
-        else
+        if side then
             perpWallDist = math.abs((mapY - rayPosY + (1 - stepY) / 2) / rayDirY)
+        else
+            perpWallDist = math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX)
         end
         
         local lineHeight = math.abs(math.floor(h / perpWallDist))
         local drawStart = -lineHeight / 2 + h / 2
         local drawEnd = lineHeight / 2 + h / 2
-        
-        if drawStart < 1 then
-            drawStart = 1
-        end
-        
-        if drawEnd >= h then
-            drawEnd = h
-        end
-        
-        local wallX
-        
-        if side == 1 then
+       
+        if side then
+            colorMod = {127, 127, 127, 255}
             wallX = rayPosX + ((mapY - rayPosY + (1 - stepY) / 2) / rayDirY) * rayDirX
         else
+            colorMod = {255, 255, 255, 255}
             wallX = rayPosY + ((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) * rayDirY
         end
         
         local wallX = wallX - math.floor(wallX)
-
-        local texX = math.floor(wallX * texWidth)
-
-        if (side == 0 and rayDirX > 0) or (side == 1 and rayDirY < 0) then
-            texX = texWidth - texX - 1
-        end
-        
-        local texNum = map[mapX][mapY]
-        
-        for y = drawStart, drawEnd do
-            local d = y * 256 - h * 128 + lineHeight * 128
-            local texY = math.floor(((d * texHeight) / lineHeight) / 256)
-            local index = math.floor(texHeight * texY + texX)
-            local imgData = texture[texNum]
-            
-            local xIndex = index % texWidth
-            local yIndex = math.floor(index / texHeight)
-            
-            if xIndex > texWidth then xIndex = texWidth end
-            if xIndex < 1 then xIndex = 1 end
-            if yIndex > texHeight then yIndex = texHeight end
-            if yIndex < 1 then yIndex = 1 end
-            
-            local r, g, b, a = imgData:getPixel(xIndex - 1, yIndex - 1)
-            love.graphics.setColor(r, g, b, a)
-            love.graphics.point(x, y)
-        end
-        
-        local floorXWall, floorYWall
-        
-        if side == 0 and rayDirX > 0 then
-            floorXWall = mapX
-            floorYWall = mapY + wallX
-        elseif side == 0 and rayDirX < 0 then
-            floorXWall = mapX + 1.0
-            floorYWall = mapY + wallX
-        elseif side == 1 and rayDirY > 0 then
-            floorXWall = mapX + wallX
-            floorYWall = mapY
-        else
-            floorXWall = mapX + wallX
-            floorYWall = mapY + 1.0
-        end
-        
-        local distWall = perpWallDist
-        local distPlayer = 0.0
-        
-        if drawEnd < 0 then
-            local drawEnd = h
-        end
-        
-        local y = drawEnd + 1
-        
-        while y < h do
-            local currentDist = h / (2.0 * y - h)
-            
-            local weight = (currentDist - distPlayer) / (distWall - distPlayer)
-            
-            local currentFloorX = weight * floorXWall + (1.0 - weight) * posX
-            local currentFloorY = weight * floorYWall + (1.0 - weight) * posY
-            
-            local floorTexX = math.floor(currentFloorX * texWidth) % texWidth
-            local floorTexY = math.floor(currentFloorY * texHeight) % texHeight
-            
-            local index = math.floor(texWidth * floorTexY + floorTexX)
-            local xIndex = index % texWidth
-            local yIndex = math.floor(index / texHeight)
-            
-            if xIndex > texWidth then xIndex = texWidth end
-            if xIndex < 1 then xIndex = 1 end
-            if yIndex > texHeight then yIndex = texHeight end
-            if yIndex < 1 then yIndex = 1 end
-
-            -- draw floor
-            local imgData = texture[4]
-            local r, g, b, a = imgData:getPixel(xIndex - 1, yIndex - 1)
-            love.graphics.setColor(r, g, b, a)
-            love.graphics.point(x, y)            
-
-            -- draw ceiling
-            local imgData = texture[8]
-            local r, g, b, a = imgData:getPixel(xIndex - 1, yIndex - 1)
-            love.graphics.setColor(r, g, b, a)
-            love.graphics.point(x, h - y)            
-            
-            y = y + 1
-        end
+        local texX = wallX * texWidth
+		local wallQuad = love.graphics.newQuad(texX, 0, 1, texHeight, texWidth, texHeight)
+		local texYScale = (drawEnd - drawStart) / texHeight
+        love.graphics.setColor(colorMod)
+		love.graphics.draw(texture[map[mapX][mapY]], wallQuad, x, drawStart, 0, 1, texYScale)
     end
     
+    -- draw FPS
     love.graphics.setColor(50, 50, 50)
     love.graphics.rectangle("fill", 5, 5, 60, 25)
     love.graphics.setColor(255, 255, 255)
