@@ -176,10 +176,10 @@ function love.draw()
         
         local wallX = wallX - math.floor(wallX)
         local texX = wallX * texWidth
-		local wallQuad = love.graphics.newQuad(texX, 0, 1, texHeight, texWidth, texHeight)
-		local texYScale = (drawEnd - drawStart) / texHeight
+        local wallQuad = love.graphics.newQuad(texX, 0, 1, texHeight, texWidth, texHeight)
+        local texYScale = (drawEnd - drawStart) / texHeight
         love.graphics.setColor(colorMod)
-		love.graphics.draw(texture[map[mapX][mapY]], wallQuad, x, drawStart, 0, 1, texYScale)
+        love.graphics.draw(texture[map[mapX][mapY]], wallQuad, x, drawStart, 0, 1, texYScale)
     end
     
     -- draw FPS
